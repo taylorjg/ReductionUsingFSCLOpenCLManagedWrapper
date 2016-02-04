@@ -28,8 +28,6 @@ kernel void reductionVector(
 	}
 }
 
-fred
-
 kernel void reductionComplete(
 	global const float4 *restrict data,
     local float4 *restrict partialSums,

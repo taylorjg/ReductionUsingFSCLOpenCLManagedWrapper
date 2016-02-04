@@ -58,9 +58,10 @@ namespace ReductionUsingFSCLOpenCLManagedWrapper
             var sumBuffer = new OpenCLBuffer(context, OpenCLMemoryFlags.WriteOnly | OpenCLMemoryFlags.AllocateHostPointer, floatType, new long[] { 1 });
             var resultDataBuffer = dataBuffer2;
 
-            var hData = GCHandle.Alloc(data, GCHandleType.Pinned);
-            commandQueue.WriteToBuffer(hData.AddrOfPinnedObject(), dataBuffer1, true, 0L, numValues);
-            hData.Free();
+            using (var pinnedData = new PinnedObject(data))
+            {
+                commandQueue.WriteToBuffer(pinnedData, dataBuffer1, true, 0L, numValues);
+            }
 
             foreach (var index in Enumerable.Range(0, int.MaxValue))
             {
@@ -91,9 +92,10 @@ namespace ReductionUsingFSCLOpenCLManagedWrapper
             commandQueue.Finish();
 
             var sum = new float[1];
-            var hSum = GCHandle.Alloc(sum, GCHandleType.Pinned);
-            commandQueue.ReadFromBuffer(sumBuffer, hSum.AddrOfPinnedObject(), true, 0L, 1L);
-            hSum.Free();
+            using (var pinnedSum = new PinnedObject(sum))
+            {
+                commandQueue.ReadFromBuffer(sumBuffer, pinnedSum, true, 0L, 1L);
+            }
 
             const int correctAnswer = numValues * value;
 
